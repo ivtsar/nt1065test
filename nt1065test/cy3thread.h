@@ -58,11 +58,11 @@ public:
     void StopTransferData();
 
     int LoadFPGA(char* fwFileName);
-    int LoadRAM(char* fwFileName);
+    int LoadRAM(const char* fwFileName);
     void GetStreamerDevice();
     int Send16bitSPI(unsigned char data, unsigned char addr);
     int DeviceReset();
-    int load1065Ctrlfile(char* fwFileName, int lastaddr);
+    int load1065Ctrlfile(const char* fwFileName, int lastaddr);
     void XferLoop(StartDataTransferParams* Params);
     int testSpectrRect(unsigned short* Data, int size);
 

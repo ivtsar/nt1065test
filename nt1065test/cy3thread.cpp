@@ -242,11 +242,11 @@ void CyThread::run()
     //emit resultReady("FX3 is not connected");
 }
 
-int CyThread::LoadRAM(char* fwFileName)
+int CyThread::LoadRAM(const char* fwFileName)
 {
     if ((NULL != StartParams.USBDevice) && (StartParams.USBDevice->IsBootLoaderRunning()))
     {
-        int retCode  = StartParams.USBDevice->DownloadFw(fwFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
+        int retCode  = StartParams.USBDevice->DownloadFw((char*)fwFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
         if (FX3_FWDWNLOAD_ERROR_CODE::SUCCESS == retCode)
         {
             Sleep(6000);
@@ -257,7 +257,7 @@ int CyThread::LoadRAM(char* fwFileName)
     return 0;
 }
 
-int CyThread::load1065Ctrlfile(char* fileName, int lastaddr)
+int CyThread::load1065Ctrlfile(const char* fileName, int lastaddr)
 {
     QFile cf(fileName);
     if (!cf.open(QFile::ReadOnly)) return -1;
