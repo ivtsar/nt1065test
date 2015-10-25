@@ -173,6 +173,7 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
     return 0;
 }
 
+
 int testSpectrRectFree()
 {
     delete spc;
@@ -202,17 +203,25 @@ void CyThread::DataProcessor(char* Data, int size)
 void CyThread::run()
 {
     StartParams.USBDevice = new CCyFX3Device;
+
+    if ( ReviewDevices() ) {
+        qFatal( "Hardware or driver problem" );
+        return;
+    }
+
     if ( LoadRAM("..\\SlaveFifoSync.img") ) {
+        qFatal( "LoadRAM() error" );
         return;
     }
     GetStreamerDevice();
+
     //cy.load1065Ctrlfile("..\\default_fix_ADC_OUTCLK.txt");
     if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 112) ) {
-        qDebug() << "FILE IO ERROR";
+        qFatal( "load1065Ctrlfile() error" );
         return;
     }
     if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 48) ) {
-        qDebug() << "FILE IO ERROR";
+        qFatal( "load1065Ctrlfile() error" );
         return;
     }
 #if 0
@@ -261,19 +270,16 @@ void CyThread::run()
 int CyThread::LoadRAM(const char* fwFileName)
 {
     qDebug() << "LoadRAM( '" << fwFileName << "' )";
-    int retCode = 0;
-    FILE* f = fopen(fwFileName, "r");
-    if ( f == NULL ) {
-        qDebug() << "LoadRAM(): file IO error";
-        retCode = -1;
-    }
-    if (retCode) {
-        return retCode;
+    QFile cf(fwFileName);
+    if (!cf.open(QFile::ReadOnly)) {
+        qFatal( "LoadRAM file '%s' io error!", fwFileName );
+        return -1;
     } else {
-        fclose(f);
+        cf.close();
     }
 
     if (NULL != StartParams.USBDevice) {
+        //qDebug() << "StartParams.USBDevice->Open(0)" << StartParams.USBDevice->Open(0);
         if (StartParams.USBDevice->IsBootLoaderRunning())
         {
             int retCode  = StartParams.USBDevice->DownloadFw((char*)fwFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
@@ -459,17 +465,27 @@ void CyThread::GetEndPointParamsByInd(int EndPointInd, int* Attr, bool* In, int*
 
 void CyThread::GetStreamerDevice(){
 
+    qDebug() << "CyThread::GetStreamerDevice()";
     //StartParams.USBDevice = new CCyFX3Device;//(NULL, CYUSBDRV_GUID,true);
 
-    if (StartParams.USBDevice == NULL) return;
+    if (StartParams.USBDevice == NULL) {
+        qDebug() << "Error: CyThread::GetStreamerDevice() USBDevice == NULL";
+        return;
+    }
 
     int n = StartParams.USBDevice->DeviceCount();
 
     // Walk through all devices looking for VENDOR_ID/PRODUCT_ID
     for (int i=0; i<n; i++)
     {
-        if ((StartParams.USBDevice->VendorID == VENDOR_ID) && (StartParams.USBDevice->ProductID == PRODUCT_ID))
+        qDebug( "Device[%2d]: 0x%04X 0x%04X",
+                i,
+                StartParams.USBDevice->VendorID,
+                StartParams.USBDevice->ProductID );
+        if ((StartParams.USBDevice->VendorID == VENDOR_ID) && (StartParams.USBDevice->ProductID == PRODUCT_ID)) {
+            qDebug( "Matched!" );
             break;
+        }
 
         StartParams.USBDevice->Open(i);
     }
@@ -508,6 +524,33 @@ void CyThread::GetStreamerDevice(){
         }
     }
 }
+
+int CyThread::ReviewDevices() {
+    if (StartParams.USBDevice == NULL) {
+        qFatal( "Error: ReviewDevices::GetStreamerDevice() USBDevice == NULL" );
+        return -1;
+    }
+    int dev_cnt = StartParams.USBDevice->DeviceCount();
+    qDebug( "ReviewDevices(): found %d devices", dev_cnt );
+
+    int suitable_dev_cnt = 0;
+    for (int i=0; i<dev_cnt; i++)
+    {
+        unsigned short product = StartParams.USBDevice->ProductID;
+        unsigned short vendor  = StartParams.USBDevice->VendorID;
+        bool suitable = ( vendor == VENDOR_ID ) && ( (product == PRODUCT_ID) || (product == PRODUCT_ID2) );
+        qDebug( "Device[%2d]: 0x%04X 0x%04X %s", i, vendor, product, suitable ? "***" : "" );
+        if ( suitable ) {
+            suitable_dev_cnt++;
+        }
+    }
+    if (suitable_dev_cnt == 0) {
+        return -2;
+    } else {
+        return 0;
+    }
+}
+
 
 void AbortXferLoop(StartDataTransferParams* Params, int pending, PUCHAR *buffers, CCyIsoPktInfo **isoPktInfos, PUCHAR *contexts, OVERLAPPED *inOvLap)
 {

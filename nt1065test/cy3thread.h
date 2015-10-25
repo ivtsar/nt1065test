@@ -8,8 +8,9 @@
 #include <vector>
 
 #define MAX_QUEUE_SZ  64
-#define VENDOR_ID  0x04B4
-#define PRODUCT_ID  0x00F1
+#define VENDOR_ID    ( 0x04B4 )
+#define PRODUCT_ID   ( 0x00F1 )
+#define PRODUCT_ID2  ( 0x00F3 )
 
 typedef void (__stdcall * DataProcessorFunc)(char*, int);//data pointer, data size (bytes);
 
@@ -52,6 +53,7 @@ public:
     //CyAPIProc(void);
     //~CyAPIProc(void);
 
+private:
     int GetEndPointsCount();
     void GetEndPointParamsByInd(int EndPointInd, int* Attr, bool* In, int* MaxPktSize, int* MaxBurst, int* Interface, int* Address);
     void StartTransferData(int EndPointInd, int PPX, int QueueSize, int TimeOut);
@@ -65,6 +67,9 @@ public:
     int load1065Ctrlfile(const char* fwFileName, int lastaddr);
     void XferLoop(StartDataTransferParams* Params);
     int testSpectrRect(unsigned short* Data, int size);
+
+    int ReviewDevices();
+
 
 signals:
     void resultReady( const QVector<double>* spc, int);
