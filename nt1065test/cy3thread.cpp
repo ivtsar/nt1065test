@@ -132,9 +132,15 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
         return 0;
     }
     spc_counter = 20;
-#if 0
-    for (int i = 0; i < fftw_n; i++)
+
+    FILE* f = fopen( "dump.bin", "wb" );
+    fwrite( data, sizeof( short ), size / 2, f );
+    fclose( f );
+#if 1
+    for (int i = 0; i < fftw_n; i++) {
         fftw_in[i] = decode_samples[(data[i]&0x03)>>0];
+        //qDebug() << (data[i]&0x03) << " " << decode_samples[(data[i]&0x03)>>0];
+    }
     fftwf_execute(pl);
     for (int i = 0; i < fftw_n/2; i++)
         (*spc)[i] = (double)(10.0*log10(fftw_out[i][0]*fftw_out[i][0]+fftw_out[i][1]*fftw_out[i][1]));
@@ -148,7 +154,7 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
         (*spc)[i] = (double)(10.0*log10(fftw_out[i][0]*fftw_out[i][0]+fftw_out[i][1]*fftw_out[i][1]));
     emit resultReady(spc, 2);
 #endif
-#if 0
+#if 1
     for (int i = 0; i < fftw_n; i++)
         fftw_in[i] = decode_samples[(data[i]&0x30)>>4];
     fftwf_execute(pl);
@@ -156,7 +162,7 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
         (*spc)[i] = (double)(10.0*log10(fftw_out[i][0]*fftw_out[i][0]+fftw_out[i][1]*fftw_out[i][1]));
     emit resultReady(spc, 3);
 #endif
-#if 0
+#if 1
     for (int i = 0; i < fftw_n; i++)
         fftw_in[i] = decode_samples[(data[i]&0xC0)>>6];
     fftwf_execute(pl);
@@ -196,11 +202,19 @@ void CyThread::DataProcessor(char* Data, int size)
 void CyThread::run()
 {
     StartParams.USBDevice = new CCyFX3Device;
-    LoadRAM("..\\SlaveFifoSync.img");
+    if ( LoadRAM("..\\SlaveFifoSync.img") ) {
+        return;
+    }
     GetStreamerDevice();
     //cy.load1065Ctrlfile("..\\default_fix_ADC_OUTCLK.txt");
-    load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 112);
-    load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 48);
+    if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 112) ) {
+        qDebug() << "FILE IO ERROR";
+        return;
+    }
+    if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 48) ) {
+        qDebug() << "FILE IO ERROR";
+        return;
+    }
 #if 0
     {
         int res;
@@ -246,15 +260,33 @@ void CyThread::run()
 
 int CyThread::LoadRAM(const char* fwFileName)
 {
-    if ((NULL != StartParams.USBDevice) && (StartParams.USBDevice->IsBootLoaderRunning()))
-    {
-        int retCode  = StartParams.USBDevice->DownloadFw((char*)fwFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
-        if (FX3_FWDWNLOAD_ERROR_CODE::SUCCESS == retCode)
+    qDebug() << "LoadRAM( '" << fwFileName << "' )";
+    int retCode = 0;
+    FILE* f = fopen(fwFileName, "r");
+    if ( f == NULL ) {
+        qDebug() << "LoadRAM(): file IO error";
+        retCode = -1;
+    }
+    if (retCode) {
+        return retCode;
+    } else {
+        fclose(f);
+    }
+
+    if (NULL != StartParams.USBDevice) {
+        if (StartParams.USBDevice->IsBootLoaderRunning())
         {
-            Sleep(6000);
-            return retCode;
+            int retCode  = StartParams.USBDevice->DownloadFw((char*)fwFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
+            if (FX3_FWDWNLOAD_ERROR_CODE::SUCCESS == retCode)
+            {
+                Sleep(6000);
+                return retCode;
+            }
+            else return -1;
         }
-        else return -1;
+    } else {
+        qDebug() << "LoadRAM(): USBDevice is NULL";
+        return -2;
     }
     return 0;
 }
