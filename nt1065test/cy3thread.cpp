@@ -229,8 +229,10 @@ void CyThread::run()
     for(int i = 0; i < EndPointsCount; i++){
         GetEndPointParamsByInd(i, &Attr, &In, &MaxPktSize, &MaxBurst, &Interface, &Address);
         printf("EndPoint index %d, Attr = %d, In = %d, MaxPktSize = %d, MaxBurst = %d, Interface = %d, Address = %d\n", i, Attr, In, MaxPktSize, MaxBurst, Interface, Address);
+        fflush(stdout);
     }
     printf("start transfering data\n");
+    fflush(stdout);
     tmpDataContainer = new char[MAX_DATA_SIZE];
     StartTransferData(0, 128, 4, 1500);
     XferLoop(&StartParams);
