@@ -3,8 +3,10 @@
 
 #include <QWidget>
 #include <QThread>
-#include <mutex>
+#include <QMutex>
 #include <thread>
+#include <map>
+#include <vector>
 
 #include "qcustomplot.h"
 
@@ -24,6 +26,16 @@ static const int PRN_IN_OPER[ PRN_CNT ] =
 };
 
 
+struct plot_data_t {
+    std::vector<double> freqs_vals;
+    std::vector< std::vector<float> > cors;
+    int center;
+    bool inited;
+    QMutex* mutex;
+    plot_data_t() : inited( false ){ mutex = new QMutex(); }
+    ~plot_data_t() { delete mutex; }
+};
+
 namespace Ui {
 class GPSCorrForm;
 }
@@ -39,6 +51,7 @@ public:
 private:
     Ui::GPSCorrForm *ui;
     QCustomPlot* plotCorrAll;
+    QCustomPlot* plotCorrGraph;
 
     QCPGraph* gr_vis;
     QCPGraph* gr_inv;
@@ -52,12 +65,13 @@ private:
     std::vector< RawSignal* > sigs;
     void calcSats();
 
-    std::mutex mtx;
     bool running;
     std::thread calc_thread;
     void calcLoop( void );
 
     void redrawVisGraph();
+
+    std::vector< plot_data_t > cdata;
 
 private slots:
     void satChanged(int prn, float corr, int shift, double freq, bool is_visible );
