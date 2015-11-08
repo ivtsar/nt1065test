@@ -27,10 +27,17 @@ MainWindow::MainWindow(QWidget *parent) :
     expAveN = 10;
     expAveC = 1.0/(double)expAveN;
     firstExpAve = 1;
+
+    QObject::connect(ui->btnShowGCAC, SIGNAL(clicked(bool)), this, SLOT(onShowGPS(bool)) );
+
 }
 
 void MainWindow::getSpc(const QVector<double>* spc, int cn)
 {
+    if ( !ui->checkSpectrum->isChecked() ) {
+        return;
+    }
+
     if (expAve)
     {
         if (firstExpAve){
@@ -55,4 +62,9 @@ MainWindow::~MainWindow()
     delete expAved;
     delete x;
     delete ui;
+}
+
+void MainWindow::onShowGPS(bool)
+{
+    this->gpsform->setVisible( true );
 }

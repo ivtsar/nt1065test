@@ -14,27 +14,40 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="btnShowGCAC">
     <property name="geometry">
      <rect>
-      <x>1040</x>
+      <x>924</x>
       <y>0</y>
-      <width>75</width>
+      <width>191</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Show GPS CA Correlation</string>
     </property>
    </widget>
    <widget class="QCustomPlot" name="widget" native="true">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>20</y>
+      <y>40</y>
       <width>1091</width>
-      <height>601</height>
+      <height>581</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkSpectrum">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Spectrum</string>
     </property>
    </widget>
   </widget>

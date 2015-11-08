@@ -73,6 +73,7 @@ private:
 
 signals:
     void resultReady( const QVector<double>* spc, int);
+    void adcData( const std::vector<short> *data );
 };
 
 #endif // CYTHREAD_H

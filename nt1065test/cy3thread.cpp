@@ -32,7 +32,7 @@ int testDataSpeed(int size)
         QueryPerformanceCounter(&li);
         ptime = double(li.QuadPart-perc)/PCFreq;
         perc = li.QuadPart;
-        qDebug() << "time: " << ptime << ", size: " << count_size << ", speed: " << double(count_size)/ptime/1000.0;
+        //qDebug() << "time: " << ptime << ", size: " << count_size << ", speed: " << double(count_size)/ptime/1000.0;
         //fprintf(stderr, "t:%f, s:%i", ptime, count_size);
         count_size = 0;
     }else
@@ -126,6 +126,12 @@ int testSpectrRectInit(int n)
 
 int CyThread::testSpectrRect(unsigned short* data, int size)
 {
+    const int BLOCK = 53000;
+    static int phase = 0;
+    phase = ( phase + size ) % BLOCK;
+    int offset = BLOCK - phase;
+
+
     if (spc_counter)
     {
         spc_counter--;
@@ -133,9 +139,20 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
     }
     spc_counter = 20;
 
-    FILE* f = fopen( "dump.bin", "wb" );
-    fwrite( data, sizeof( short ), size / 2, f );
-    fclose( f );
+    std::vector<short>* rawdata = new std::vector<short>;
+    int sz = BLOCK*16;
+    if ( sz > size ) {
+        sz = size;
+    }
+    rawdata->resize( sz );
+    for (int i = 0; i < sz; i++) {
+        rawdata->at(i) = decode_samples[ ( data[ i + offset ] & 0x03 ) >> 0 ];
+    }
+    emit adcData( rawdata );
+
+//    FILE* f = fopen( "dump.bin", "wb" );
+//    fwrite( data, sizeof( short ), size / 2, f );
+//    fclose( f );
 #if 1
     for (int i = 0; i < fftw_n; i++) {
         fftw_in[i] = decode_samples[(data[i]&0x03)>>0];

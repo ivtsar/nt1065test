@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "QCustomPlot.h"
+#include "gpscorrform.h"
 
 namespace Ui {
 class MainWindow;
@@ -16,6 +17,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    GPSCorrForm* gpsform;
+
 private:
     Ui::MainWindow *ui;
     QCustomPlot* customPlot;
@@ -26,6 +29,9 @@ private:
     int expAveN;
     double expAveC;
     int firstExpAve;
+
+private slots:
+    void onShowGPS(bool);
 
 public slots:
     void getSpc(const QVector<double>* spc, int cn);
