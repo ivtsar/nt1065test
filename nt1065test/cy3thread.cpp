@@ -126,11 +126,18 @@ int testSpectrRectInit(int n)
 
 int CyThread::testSpectrRect(unsigned short* data, int size)
 {
-    const int BLOCK = 53000;
     static int phase = 0;
-    phase = ( phase + size ) % BLOCK;
+    static unsigned int all_size = 0;
+
+    const int BLOCK = 53000;
+
     int offset = BLOCK - phase;
 
+    all_size += size;
+    all_size %= BLOCK;
+    phase = ( phase + size ) % BLOCK;
+
+    //fprintf( stderr, "%5d %5d %5d %5d\n", all_size, size, phase, offset );
 
     if (spc_counter)
     {
