@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>972</width>
-    <height>591</height>
+    <width>1067</width>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>10</x>
      <y>20</y>
-     <width>581</width>
-     <height>561</height>
+     <width>241</width>
+     <height>621</height>
     </rect>
    </property>
   </widget>
@@ -34,6 +34,16 @@
    </property>
    <property name="text">
     <string>Refresh</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableRes">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>20</y>
+     <width>221</width>
+     <height>621</height>
+    </rect>
    </property>
   </widget>
  </widget>

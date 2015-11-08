@@ -60,13 +60,14 @@ private:
     void redrawVisGraph();
 
 private slots:
-    void satChanged( int prn, float corr, bool is_visible );
+    void satChanged(int prn, float corr, int shift, double freq, bool is_visible );
+    void cellSelected( int, int );
 
 public slots:
     void processRawData( const std::vector<short>* data );
 
 signals:
-    void satInfo( int prn, float corr, bool is_visible );
+    void satInfo( int prn, float corr, int shift, double freq, bool is_visible );
 };
 
 #endif // GPSCORRFORM_H

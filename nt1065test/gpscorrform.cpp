@@ -10,7 +10,11 @@ GPSCorrForm::GPSCorrForm(QWidget *parent) :
     ui->setupUi(this);
 
 
-    QObject::connect(this, SIGNAL(satInfo(int,float,bool)), this, SLOT(satChanged(int,float,bool)) );
+    QObject::connect(this, SIGNAL(satInfo(int,float,int,double,bool)),
+                     this, SLOT(satChanged(int,float,int,double,bool)) );
+
+    QObject::connect(ui->tableRes, SIGNAL( cellDoubleClicked (int, int) ),
+                     this, SLOT( cellSelected( int, int ) ) );
 
     plotCorrAll = ui->widgetCorrAll;
 
@@ -44,7 +48,20 @@ GPSCorrForm::GPSCorrForm(QWidget *parent) :
 
     plotCorrAll->yAxis->setRange( 0, 38000 );
 
+    ui->tableRes->setRowCount( PRN_MAX );
+    ui->tableRes->setColumnCount( 4 );
 
+    QStringList heads;
+    heads << "Stat" << "Freq" << "Shift" << "Val";
+    ui->tableRes->setHorizontalHeaderLabels( heads );
+    ui->tableRes->setColumnWidth( 0, 40 );
+    ui->tableRes->setColumnWidth( 1, 40 );
+    ui->tableRes->setColumnWidth( 2, 40 );
+    ui->tableRes->setColumnWidth( 3, 40 );
+
+    for ( int i = 0; i < PRN_MAX; ++i ) {
+        ui->tableRes->setRowHeight( i, 18 );
+    }
 
     set_tmp_dir( "M:\\tmp" );
 
@@ -74,9 +91,10 @@ void GPSCorrForm::calcSats()
         sv.SetSignal( &sigs );
         sv.CalcCorrMatrix();
         if ( sv.FindMaxCorr( freq, tshift, corrval ) ) {
-            emit satInfo( PRN_IN_OPER[ si ], corrval, true );
+            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, true );
+
             sv.PreciseFreq( freq, tshift, corrval );
-            emit satInfo( PRN_IN_OPER[ si ], corrval, true );
+            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, true );
 
 //            file_dump( NULL, 0, "xcorr", "flt", PRN_IN_OPER[ si ], true );
 //            std::vector< std::vector<float> > cm;
@@ -89,7 +107,7 @@ void GPSCorrForm::calcSats()
 //            fprintf( stderr, "[%2d] size %d x %d\n", PRN_IN_OPER[ si ], cm.size(), cm[0].size() );
 
         } else {
-            emit satInfo( PRN_IN_OPER[ si ], corrval, false );
+            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, false );
         }
 
         if ( !running ) {
@@ -142,13 +160,40 @@ void GPSCorrForm::redrawVisGraph() {
     plotCorrAll->replot();
 }
 
-void GPSCorrForm::satChanged(int prn, float corr, bool is_visible) {
+QTableWidgetItem* MakeTableItem( QString& str, bool grey ) {
+    QTableWidgetItem* item = new QTableWidgetItem( str );
+    item->setTextAlignment( Qt::AlignRight );
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    if ( grey ) {
+        item->setForeground(QColor::fromRgb(128,128,128));
+    }
+    return item;
+}
+
+void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool is_visible) {
+
+    int tidx = prn - 1;
+
+
     if ( is_visible ) {
         visible_corrs[ prn ]   = corr;
         invisible_corrs[ prn ] = 0;
+
+        ui->tableRes->setItem( tidx, 0, MakeTableItem( QString("VIS"), !is_visible ) );
     } else {
         visible_corrs[ prn ]   = 0;
         invisible_corrs[ prn ] = corr;
+
+        ui->tableRes->setItem( tidx, 0, MakeTableItem(QString("-"), !is_visible ) );
     }
+
+    ui->tableRes->setItem( tidx, 1, MakeTableItem( QString::number( freq, 'f', 0  ), !is_visible ) );
+    ui->tableRes->setItem( tidx, 2, MakeTableItem( QString::number( shift ), !is_visible ) );
+    ui->tableRes->setItem( tidx, 3, MakeTableItem( QString::number( corr, 'f', 0 ), !is_visible ) );
+
     redrawVisGraph();
+}
+
+void GPSCorrForm::cellSelected(int x, int) {
+    qDebug( "PRN %d", x + 1 );
 }
