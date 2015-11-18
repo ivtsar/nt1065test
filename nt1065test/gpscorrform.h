@@ -12,10 +12,19 @@
 
 #include "gcacorr/gpsvis.h"
 
-#define RCV_SR          (  53.000e6 )
-#define GPS_FREQ_IN_RCV  ( -14.58e6 )
+// ITs FX3
+// GPS L1   = 1575.42 MHz
+// RCV FREQ = 1590.00 MHz
+//#define RCV_SR          (  53.000e6 )
+//#define GPS_FREQ_IN_RCV  ( -14.58e6 )
+//#define ADC_DATA_TYPE   ( DT_INT16_REAL )
+//#define DATA_SIZE       (    53000 )
+
+// ITs FX3 GPS special w injector
+#define RCV_SR          ( 16.368e6 )
+#define GPS_FREQ_IN_RCV  ( 4.092e6 )
 #define ADC_DATA_TYPE   ( DT_INT16_REAL )
-#define DATA_SIZE       (    53000 )
+#define DATA_SIZE       ( 16368 )
 
 static const int PRN_CNT = 30;
 static const int PRN_MAX = 33;

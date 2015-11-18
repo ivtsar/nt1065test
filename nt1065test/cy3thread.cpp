@@ -233,13 +233,14 @@ void CyThread::run()
         return;
     }
 
-    if ( LoadRAM("..\\SlaveFifoSync.img") ) {
+    //if ( LoadRAM("..\\SlaveFifoSync.img") ) {
+    if ( LoadRAM("..\\fx3_newsub_injector.img") ) {
         qFatal( "LoadRAM() error" );
         return;
     }
     GetStreamerDevice();
 
-    //cy.load1065Ctrlfile("..\\default_fix_ADC_OUTCLK.txt");
+#if 0
     if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 112) ) {
         qFatal( "load1065Ctrlfile() error" );
         return;
@@ -248,6 +249,8 @@ void CyThread::run()
         qFatal( "load1065Ctrlfile() error" );
         return;
     }
+#endif
+
 #if 0
     {
         int res;
