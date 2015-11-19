@@ -154,6 +154,9 @@ int CyThread::testSpectrRect(unsigned short* data, int size)
     rawdata->resize( sz );
     for (int i = 0; i < sz; i++) {
         rawdata->at(i) = decode_samples[ ( data[ i + offset ] & 0x03 ) >> 0 ];
+        //rawdata->at(i) = decode_samples[ ( data[ i + offset ] & 0x0C ) >> 2 ];
+        //rawdata->at(i) = decode_samples[ ( data[ i + offset ] & 0x30 ) >> 4 ];
+        //rawdata->at(i) = decode_samples[ ( data[ i + offset ] & 0xC0 ) >> 6 ];
     }
     emit adcData( rawdata );
 
