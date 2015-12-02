@@ -14,6 +14,7 @@ double PCFreq = 0.0;
 LONGLONG perc;
 double ptime = -1;
 //
+//test
 
 int testDataSpeed(int size)
 {
