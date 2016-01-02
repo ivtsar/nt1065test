@@ -67,6 +67,7 @@ private:
     int load1065Ctrlfile(const char* fwFileName, int lastaddr);
     void XferLoop(StartDataTransferParams* Params);
     int testSpectrRect(unsigned short* Data, int size);
+    int Read16bitSPI(unsigned short addr, unsigned char* data);
 
     int ReviewDevices();
 

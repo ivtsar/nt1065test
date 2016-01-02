@@ -236,12 +236,24 @@ void CyThread::run()
         return;
     }
 
-    //if ( LoadRAM("..\\SlaveFifoSync.img") ) {
-    if ( LoadRAM("..\\fx3_newsub_injector.img") ) {
+    if ( LoadRAM("..\\SlaveFifoSync.img") ) {
+    //if ( LoadRAM("..\\fx3_newsub_injector.img") ) {
         qFatal( "LoadRAM() error" );
         return;
     }
     GetStreamerDevice();
+
+#if 1
+    //NT1065 Register read test
+    for (;;)
+    {
+        unsigned char ldata = 0x01;
+        Read16bitSPI(0x00, &ldata);
+        Sleep(100);
+        Read16bitSPI(0x01, &ldata);
+        Sleep(100);
+    }
+#endif
 
 #if 0
     if ( load1065Ctrlfile("..\\singleLO_L1_10MHz_ADC_CLKOUT_RE_noIFAGC.hex", 112) ) {
@@ -352,6 +364,30 @@ int CyThread::load1065Ctrlfile(const char* fileName, int lastaddr)
             }
     } while (!line.isNull());
     return 0;
+}
+
+int CyThread::Read16bitSPI(unsigned short addr, unsigned char* data)
+{
+    UCHAR buf[16];
+    //addr |= 0x8000;
+    buf[0] = (UCHAR)(*data);
+    buf[1] = (UCHAR)(addr|0x80);
+
+    CCyControlEndPoint* CtrlEndPt;
+    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target = TGT_DEVICE;
+    CtrlEndPt->ReqType = REQ_VENDOR;
+    CtrlEndPt->Direction = DIR_FROM_DEVICE;
+    CtrlEndPt->ReqCode = 0xB5;
+    CtrlEndPt->Value = *data;
+    CtrlEndPt->Index = addr|0x80;
+    long len = 16;
+    int success = CtrlEndPt->XferData(&buf[0], len);
+
+    *data = buf[0];
+    qDebug() << "Reg" << (addr|0x80) << " " << hex << *data;
+
+    return success;
 }
 
 int CyThread::Send16bitSPI(unsigned char data, unsigned char addr)
